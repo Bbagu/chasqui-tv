@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Banners — Chasqui TV Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { amarillo: '#F5C400', rojo: '#CC1818', negro: '#111111', gris: '#F8F8F8' },
+          fontFamily: { bebas: ['Bebas Neue', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gris font-barlow flex min-h-screen" x-data="bannersManager()">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-negro text-white flex flex-col fixed inset-y-0 shadow-2xl z-50">
+    <div class="p-6 bg-amarillo flex justify-center border-b-4 border-negro">
+      <img src="../CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV" class="h-10 object-contain">
+    </div>
+    <nav class="flex-1 p-4 space-y-2 mt-4">
+      <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📊 Dashboard</a>
+      <a href="noticias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📰 Noticias</a>
+      <a href="categorias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📁 Categorías</a>
+      <a href="banners.html" class="flex items-center gap-3 px-4 py-3 bg-amarillo text-negro font-bold rounded-lg transition">🖼️ Banners</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-64 p-8">
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h2 class="font-bebas text-4xl text-negro uppercase">Gestión de Banners</h2>
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Administra los espacios publicitarios</p>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Formulario para Nuevo / Editar -->
+      <div class="lg:col-span-4">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-8 space-y-4">
+          <h3 class="font-bebas text-2xl mb-4" x-text="editMode ? 'Editar Banner' : 'Nuevo Banner'"></h3>
+          
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Nombre / Cliente</label>
+            <input type="text" x-model="form.nombre" placeholder="Ej. Banner Alcaldía" class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Posición</label>
+            <select x-model="form.posicion" class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm uppercase font-bold text-[10px]">
+              <option value="header">Header (Top)</option>
+              <option value="sidebar">Sidebar (Lateral)</option>
+              <option value="articulo">Dentro de Artículo</option>
+              <option value="footer">Footer (Fondo)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">URL Imagen</label>
+            <input type="text" x-model="form.imagen_url" placeholder="https://..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm mb-2">
+            <div class="aspect-video bg-gray-100 rounded overflow-hidden flex items-center justify-center border border-gray-200">
+               <template x-if="form.imagen_url">
+                  <img :src="form.imagen_url" class="w-full h-full object-contain">
+               </template>
+               <span x-show="!form.imagen_url" class="text-[10px] text-gray-300 font-bold uppercase">Previsualización</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">URL de Destino (Link)</label>
+            <input type="text" x-model="form.url_destino" placeholder="https://..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+          </div>
+
+          <div class="flex items-center gap-2 pt-2">
+            <input type="checkbox" x-model="form.activo" class="w-4 h-4 accent-rojo">
+            <label class="text-[10px] font-bold text-gray-500 uppercase">Banner Activo</label>
+          </div>
+
+          <div class="pt-4 flex gap-2">
+            <button @click="saveBanner" class="flex-1 bg-negro text-amarillo font-bebas text-xl py-2 rounded hover:bg-rojo hover:text-white transition shadow-lg">
+              GUARDAR BANNER
+            </button>
+            <button x-show="editMode" @click="resetForm" class="bg-white border border-gray-200 px-4 py-2 rounded text-[10px] font-bold uppercase hover:bg-gray-100">
+              CANCELAR
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Listado de Banners -->
+      <div class="lg:col-span-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vista Previa</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nombre y Posición</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Estado</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <template x-for="banner in banners" :key="banner.id">
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">
+                    <img :src="banner.imagen_url" class="h-10 w-20 object-cover rounded shadow-sm bg-gray-100">
+                  </td>
+                  <td class="px-6 py-4">
+                    <p class="font-bold text-sm text-negro" x-text="banner.nombre"></p>
+                    <p class="text-[10px] text-rojo font-bold uppercase tracking-tighter" x-text="banner.posicion"></p>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span :class="banner.activo ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'" class="text-[10px] font-bold uppercase px-2 py-1 rounded" x-text="banner.activo ? 'Activo' : 'Inactivo'"></span>
+                  </td>
+                  <td class="px-6 py-4 text-right space-x-3">
+                    <button @click="editBanner(banner)" class="text-gray-400 hover:text-negro transition">✏️</button>
+                    <button @click="deleteBanner(banner.id)" class="text-gray-400 hover:text-rojo transition">🗑️</button>
+                  </td>
+                </tr>
+              </template>
+              <template x-if="banners.length === 0">
+                <tr>
+                  <td colspan="4" class="px-6 py-20 text-center">
+                    <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">No hay banners configurados aún.</p>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script>
+    function bannersManager() {
+      return {
+        banners: [],
+        editMode: false,
+        form: { id: null, nombre: '', posicion: 'sidebar', imagen_url: '', url_destino: '', activo: true, tipo: 'propio' },
+        async init() {
+          const { data: { session } } = await window.supabase.auth.getSession();
+          if (!session) { window.location.href = 'login.html'; return; }
+          this.fetchBanners();
+        },
+        async fetchBanners() {
+          const { data, error } = await window.supabase.from('banners').select('*').order('created_at', { ascending: false });
+          if (!error) this.banners = data;
+        },
+        async saveBanner() {
+          if (!this.form.nombre || !this.form.imagen_url) return alert('Nombre e Imagen son obligatorios');
+          
+          let result;
+          if (this.editMode) {
+            result = await window.supabase.from('banners').update(this.form).eq('id', this.form.id);
+          } else {
+            result = await window.supabase.from('banners').insert([this.form]);
+          }
+
+          if (!result.error) {
+            this.resetForm();
+            this.fetchBanners();
+            alert('¡Guardado!');
+          } else {
+            alert('Error: ' + result.error.message);
+          }
+        },
+        editBanner(banner) {
+          this.editMode = true;
+          this.form = { ...banner };
+        },
+        async deleteBanner(id) {
+          if (!confirm('¿Seguro que quieres eliminar este banner?')) return;
+          const { error } = await window.supabase.from('banners').delete().eq('id', id);
+          if (!error) this.fetchBanners();
+        },
+        resetForm() {
+          this.editMode = false;
+          this.form = { id: null, nombre: '', posicion: 'sidebar', imagen_url: '', url_destino: '', activo: true, tipo: 'propio' };
+        }
+      }
+    }
+  </script>
+</body>
+</html>

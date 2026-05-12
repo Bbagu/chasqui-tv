@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor de Noticia — Chasqui TV Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { amarillo: '#F5C400', rojo: '#CC1818', negro: '#111111', gris: '#F8F8F8' },
+          fontFamily: { bebas: ['Bebas Neue', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gris font-barlow flex min-h-screen" x-data="noticiaEditor()">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-negro text-white flex flex-col fixed inset-y-0 shadow-2xl z-50">
+    <div class="p-6 bg-amarillo flex justify-center border-b-4 border-negro">
+      <img src="../CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV" class="h-10 object-contain">
+    </div>
+    <nav class="flex-1 p-4 space-y-2 mt-4">
+      <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📊 Dashboard</a>
+      <a href="noticias.html" class="flex items-center gap-3 px-4 py-3 bg-amarillo text-negro font-bold rounded-lg transition">📰 Noticias</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-64 p-8">
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h2 class="font-bebas text-4xl text-negro uppercase" x-text="editMode ? 'Editar Noticia' : 'Nueva Noticia'"></h2>
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Completa los campos para publicar contenido</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="noticias.html" class="bg-white border border-gray-200 px-6 py-2 rounded font-bold text-xs uppercase tracking-widest hover:bg-gray-100 transition">Cancelar</a>
+        <button @click="saveNoticia" class="bg-rojo text-white font-bebas text-xl px-10 py-2 rounded hover:bg-negro transition shadow-lg">
+          GUARDAR NOTICIA
+        </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Formulario Principal -->
+      <div class="lg:col-span-8 space-y-6">
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-4">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Título de la Noticia</label>
+            <input type="text" x-model="form.titulo" @input="generateSlug" placeholder="Escribe un titular impactante..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-lg font-bold">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Slug (URL amigable)</label>
+            <input type="text" x-model="form.slug" readonly class="w-full bg-gray-50 border border-gray-100 px-4 py-2 rounded text-xs text-gray-400 italic outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Resumen / Bajada</label>
+            <textarea x-model="form.resumen" rows="3" placeholder="Un breve resumen..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm"></textarea>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Cuerpo de la Noticia (HTML)</label>
+            <textarea x-model="form.contenido" rows="12" placeholder="Escribe el contenido aquí..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm font-serif"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ajustes Laterales -->
+      <div class="lg:col-span-4 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-6">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Categoría</label>
+            <select x-model="form.categoria_id" class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+              <option value="">Seleccionar...</option>
+              <template x-for="cat in categorias" :key="cat.id">
+                <option :value="cat.id" x-text="cat.nombre"></option>
+              </template>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Imagen Principal</label>
+            <div class="flex flex-col gap-3">
+              <input type="file" @change="uploadImage" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-amarillo file:text-negro hover:file:bg-yellow-500 cursor-pointer">
+              <div class="relative group">
+                <input type="text" x-model="form.imagen_url" placeholder="O pega una URL externa..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+                <div x-show="uploading" class="absolute inset-0 bg-white/80 flex items-center justify-center rounded">
+                  <span class="text-[10px] font-bold text-negro animate-bounce">SUBIENDO ARCHIVO...</span>
+                </div>
+              </div>
+            </div>
+            <div class="aspect-video bg-gray-100 rounded overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-200 mt-3">
+              <img x-show="form.imagen_url" :src="form.imagen_url" class="w-full h-full object-cover">
+              <span x-show="!form.imagen_url" class="text-[10px] text-gray-400 font-bold uppercase">Previsualización</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Estado</label>
+            <div class="flex gap-2">
+              <button @click="form.estado = 'borrador'" :class="form.estado === 'borrador' ? 'bg-negro text-white' : 'bg-gray-100 text-gray-400'" class="flex-1 py-2 rounded text-[10px] font-bold uppercase">Borrador</button>
+              <button @click="form.estado = 'publicado'" :class="form.estado === 'publicado' ? 'bg-rojo text-white' : 'bg-gray-100 text-gray-400'" class="flex-1 py-2 rounded text-[10px] font-bold uppercase">Publicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script>
+    function noticiaEditor() {
+      return {
+        editMode: false,
+        uploading: false,
+        categorias: [],
+        form: { titulo: '', slug: '', resumen: '', contenido: '', imagen_url: '', categoria_id: '', estado: 'borrador' },
+        async init() {
+          const { data: { session } } = await window.supabase.auth.getSession();
+          if (!session) { window.location.href = 'login.html'; return; }
+          await this.fetchCategorias();
+          const id = new URLSearchParams(window.location.search).get('id');
+          if (id) {
+            this.editMode = true;
+            this.fetchNoticia(id);
+          }
+        },
+        async fetchCategorias() {
+          const { data } = await window.supabase.from('categorias').select('*');
+          this.categorias = data || [];
+        },
+        async fetchNoticia(id) {
+          const { data } = await window.supabase.from('noticias').select('*').eq('id', id).single();
+          if (data) this.form = data;
+        },
+        generateSlug() {
+          this.form.slug = this.form.titulo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        },
+        async uploadImage(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          try {
+            this.uploading = true;
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `noticias/${fileName}`;
+
+            // 1. Subir a Supabase Storage (Requiere bucket 'noticias' creado)
+            const { error: uploadError } = await window.supabase.storage
+              .from('noticias')
+              .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Obtener URL Pública
+            const { data } = window.supabase.storage
+              .from('noticias')
+              .getPublicUrl(filePath);
+
+            this.form.imagen_url = data.publicUrl;
+
+          } catch (error) {
+            alert('Error al subir imagen: ' + error.message + '\n\nIMPORTANTE: Asegúrate de haber creado el bucket "noticias" en Supabase y que sea Público.');
+          } finally {
+            this.uploading = false;
+          }
+        },
+        async saveNoticia() {
+          const { data: { session } } = await window.supabase.auth.getSession();
+          const payload = { ...this.form, autor_id: session.user.id };
+          let result;
+          if (this.editMode) {
+            result = await window.supabase.from('noticias').update(payload).eq('id', this.form.id);
+          } else {
+            result = await window.supabase.from('noticias').insert([payload]);
+          }
+          if (!result.error) {
+            alert('¡Guardado con éxito!');
+            window.location.href = 'noticias.html';
+          } else {
+            alert('Error: ' + result.error.message);
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

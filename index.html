@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chasqui TV — Noticias del Ecuador en Vivo</title>
+  
+  <!-- Tipografías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            amarillo: '#F5C400',
+            rojo: '#CC1818',
+            negro: '#111111',
+            grisOsc: '#1E1E1E',
+          },
+          fontFamily: {
+            bebas: ['Bebas Neue', 'sans-serif'],
+            barlow: ['Barlow', 'sans-serif'],
+            condensed: ['Barlow Condensed', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .linea-amarilla { border-bottom: 3px solid #F5C400; }
+    .bg-chasqui { background-color: #111111; }
+    .ticker-animation { animation: ticker 30s linear infinite; }
+    @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    .aspect-video { aspect-ratio: 16 / 9; }
+  </style>
+</head>
+<body class="bg-white font-barlow text-negro pb-16">
+
+  <!-- 1. TICKER (Última hora) -->
+  <div class="bg-rojo text-white h-9 flex items-center overflow-hidden sticky top-0 z-[100]">
+    <div class="bg-negro h-full px-4 flex items-center font-bebas text-lg tracking-wider z-10 shrink-0">
+      <span class="w-2 h-2 bg-amarillo rounded-full mr-2 animate-pulse"></span> ÚLTIMAS
+    </div>
+    <div class="ticker-animation whitespace-nowrap font-condensed text-sm uppercase font-semibold">
+      <span class="mx-8">Asamblea Nacional debate nueva ley de seguridad</span>
+      <span class="mx-8">Ecuador clasifica a semifinales de la Copa América Sub-20</span>
+      <span class="mx-8">Sismo de 4.2 se registra en la provincia de Guayas sin daños graves</span>
+      <span class="mx-8">Inicia festival de cine internacional en Quito</span>
+    </div>
+  </div>
+
+  <!-- 2. HEADER -->
+  <header class="bg-negro text-white linea-amarilla px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-9 z-[90]">
+    <a href="index.html" class="flex items-center gap-3">
+      <img src="CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV Logo" class="h-16 w-auto object-contain">
+      <div class="hidden sm:block">
+        <h1 class="font-bebas text-3xl leading-none">Chasqui<span class="text-amarillo">TV</span></h1>
+        <p class="font-condensed text-[10px] tracking-[0.2em] text-gray-400 uppercase">Noticias del Ecuador</p>
+      </div>
+    </a>
+    <div class="flex items-center bg-grisOsc border border-gray-700 rounded overflow-hidden w-full md:w-64">
+      <input type="text" placeholder="Buscar..." class="bg-transparent border-none px-3 py-1.5 text-sm outline-none w-full">
+      <button class="bg-amarillo p-2 text-negro">🔍</button>
+    </div>
+  </header>
+
+  <!-- 3. NAVEGACIÓN -->
+  <nav class="bg-grisOsc border-b border-gray-800 hidden md:block">
+    <div class="max-w-7xl mx-auto px-6 flex gap-1">
+      <a href="index.html" class="font-condensed font-bold text-amarillo border-b-2 border-amarillo px-4 py-3 uppercase text-sm">Inicio</a>
+      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Política</a>
+      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Deportes</a>
+      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Economía</a>
+      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Internacional</a>
+    </div>
+  </nav>
+
+  <!-- 4. CONTENIDO PRINCIPAL -->
+  <main id="home-content" class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- COLUMNA IZQUIERDA: LIVE + NOTICIAS -->
+    <div class="lg:col-span-8">
+      
+      <!-- SECCIÓN LIVE (DINÁMICA) -->
+      <section class="mb-10">
+        <div class="flex items-center justify-between mb-4 border-b-2 border-negro pb-2">
+          <h2 class="font-bebas text-2xl tracking-tight flex items-center gap-2">
+            <span class="w-3 h-3 bg-rojo rounded-full animate-ping"></span> TRANSMISIÓN EN VIVO
+          </h2>
+          <span class="font-condensed text-xs font-bold text-gray-500 uppercase tracking-widest">Señal Digital</span>
+        </div>
+        <div class="bg-black rounded-lg overflow-hidden shadow-2xl aspect-video relative">
+          <iframe 
+            id="livePlayer"
+            class="absolute top-0 left-0 w-full h-full"
+            src="" 
+            title="Chasqui TV Live" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      </section>
+
+      <!-- NOTICIAS DESTACADAS -->
+      <section id="news-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- JS inyectará las noticias aquí -->
+        <div class="col-span-full text-center py-20 text-gray-300 uppercase font-bold animate-pulse">Cargando noticias...</div>
+      </section>
+    </div>
+
+    <!-- COLUMNA DERECHA: SIDEBAR -->
+    <aside class="lg:col-span-4 space-y-8">
+      
+      <!-- BANNER PUBLICIDAD -->
+      <div class="bg-gray-100 border-2 border-dashed border-gray-300 h-64 flex flex-col items-center justify-center text-gray-400 font-condensed">
+        <span class="text-xs uppercase tracking-widest">Publicidad</span>
+        <span class="text-lg">300 x 250</span>
+      </div>
+
+      <!-- LO MÁS LEÍDO -->
+      <div class="bg-gray-50 p-5 rounded">
+        <h3 class="font-bebas text-xl border-b-2 border-amarillo mb-4">Lo más leído</h3>
+        <ul class="space-y-4">
+          <li class="flex gap-3">
+            <span class="font-bebas text-3xl text-amarillo leading-none">1</span>
+            <a href="noticia.html" class="font-condensed font-bold text-sm hover:text-rojo transition">Sismo de 4.2 sacude Guayaquil esta madrugada</a>
+          </li>
+          <li class="flex gap-3">
+            <span class="font-bebas text-3xl text-amarillo leading-none">2</span>
+            <a href="noticia.html" class="font-condensed font-bold text-sm hover:text-rojo transition">Nuevas tarifas eléctricas entran en vigencia el próximo mes</a>
+          </li>
+          <li class="flex gap-3">
+            <span class="font-bebas text-3xl text-amarillo leading-none">3</span>
+            <a href="noticia.html" class="font-condensed font-bold text-sm hover:text-rojo transition">Barcelona SC prepara su próximo encuentro en el Monumental</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- NEWSLETTER -->
+      <div class="bg-negro text-white p-6 rounded shadow-xl">
+        <h3 class="font-bebas text-2xl text-amarillo mb-2">Chasqui News</h3>
+        <p class="text-xs text-gray-400 mb-4">Recibe lo mejor de la información nacional e internacional en tu correo.</p>
+        <form class="flex flex-col gap-2">
+          <input type="email" required placeholder="Tu correo electrónico" class="bg-grisOsc border border-gray-700 px-3 py-2 text-sm rounded outline-none focus:border-amarillo">
+          <button type="submit" class="bg-amarillo text-negro font-bebas text-lg py-1.5 rounded hover:bg-yellow-500 transition">Suscribirme</button>
+        </form>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

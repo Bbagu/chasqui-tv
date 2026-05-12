@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Chasqui TV Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { amarillo: '#F5C400', rojo: '#CC1818', negro: '#111111', gris: '#F8F8F8' },
+          fontFamily: { bebas: ['Bebas Neue', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gris font-barlow flex min-h-screen" x-data="adminDashboard()">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-negro text-white flex flex-col fixed inset-y-0 shadow-2xl z-50">
+    <div class="p-6 bg-amarillo flex justify-center border-b-4 border-negro">
+      <img src="../CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV" class="h-10 object-contain">
+    </div>
+    <nav class="flex-1 p-4 space-y-2 mt-4">
+      <a href="index.html" class="flex items-center gap-3 px-4 py-3 bg-amarillo text-negro font-bold rounded-lg transition">📊 Dashboard</a>
+      <a href="noticias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📰 Noticias</a>
+      <a href="categorias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📁 Categorías</a>
+      <a href="banners.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">🖼️ Banners</a>
+      <a href="usuarios.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">👥 Usuarios</a>
+    </nav>
+    <div class="p-4 border-t border-white/10">
+      <button @click="logout" class="w-full flex items-center gap-3 px-4 py-3 text-rojo hover:bg-rojo hover:text-white rounded-lg transition font-bold uppercase text-xs tracking-widest">
+        🚪 Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-64 p-8">
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h2 class="font-bebas text-4xl text-negro">Bienvenido, <span x-text="userName">Admin</span></h2>
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Gestión editorial de Chasqui TV</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="../index.html" target="_blank" class="bg-white border border-gray-200 px-4 py-2 rounded text-xs font-bold uppercase tracking-widest hover:bg-gray-100 transition">Ver sitio público ↗</a>
+      </div>
+    </header>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amarillo">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Noticias Publicadas</p>
+        <h3 class="font-bebas text-5xl text-negro">124</h3>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-rojo">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vistas Totales</p>
+        <h3 class="font-bebas text-5xl text-negro">8.5k</h3>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-negro">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Suscriptores</p>
+        <h3 class="font-bebas text-5xl text-negro">452</h3>
+      </div>
+    </div>
+
+    <!-- ACCIÓN RÁPIDA: CONTROL DE LIVE URL -->
+    <section class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-10">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-3 h-3 bg-rojo rounded-full animate-ping"></span>
+        <h3 class="font-bebas text-2xl">Control de Transmisión en Vivo</h3>
+      </div>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">URL de YouTube o Facebook Live</label>
+          <input type="text" x-model="liveUrl" placeholder="https://www.youtube.com/embed/..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+        </div>
+        <button @click="updateLiveUrl" class="bg-negro text-amarillo font-bebas text-xl px-10 py-3 rounded hover:bg-rojo hover:text-white transition-all self-end">
+          ACTUALIZAR SEÑAL
+        </button>
+      </div>
+      <p class="mt-4 text-[10px] text-gray-400 font-bold uppercase">Nota: El cambio se refleja instantáneamente en el Home del sitio.</p>
+    </section>
+
+  </main>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script>
+    function adminDashboard() {
+      return {
+        userName: 'Editor',
+        liveUrl: '',
+        async init() {
+          // Verificar si el usuario está autenticado
+          const { data: { user } } = await window.supabase.auth.getUser();
+          if (!user) {
+            window.location.href = 'login.html';
+            return;
+          }
+          this.userName = user.user_metadata.nombre || 'Admin';
+          this.getLiveUrl();
+        },
+        async getLiveUrl() {
+          const { data, error } = await window.supabase
+            .from('configuracion')
+            .select('valor')
+            .eq('clave', 'url_live')
+            .single();
+          if (data) this.liveUrl = data.valor;
+        },
+        async updateLiveUrl() {
+          const { error } = await window.supabase
+            .from('configuracion')
+            .update({ valor: this.liveUrl })
+            .eq('clave', 'url_live');
+          
+          if (!error) {
+            alert('¡Señal actualizada correctamente!');
+          } else {
+            alert('Error al actualizar: ' + error.message);
+          }
+        },
+        async logout() {
+          await window.supabase.auth.signOut();
+          window.location.href = 'login.html';
+        }
+      }
+    }
+  </script>
+</body>
+</html>

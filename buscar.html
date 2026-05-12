@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados de búsqueda — Chasqui TV</title>
+  
+  <!-- Tipografías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            amarillo: '#F5C400',
+            rojo: '#CC1818',
+            negro: '#111111',
+            grisOsc: '#1E1E1E',
+          },
+          fontFamily: {
+            bebas: ['Bebas Neue', 'sans-serif'],
+            barlow: ['Barlow', 'sans-serif'],
+            condensed: ['Barlow Condensed', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .linea-amarilla { border-bottom: 3px solid #F5C400; }
+    .ticker-animation { animation: ticker 30s linear infinite; }
+    @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+  </style>
+</head>
+<body class="bg-white font-barlow text-negro">
+
+  <!-- 1. TICKER -->
+  <div class="bg-rojo text-white h-9 flex items-center overflow-hidden sticky top-0 z-[100]">
+    <div class="bg-negro h-full px-4 flex items-center font-bebas text-lg tracking-wider z-10 shrink-0">
+      <span class="w-2 h-2 bg-amarillo rounded-full mr-2 animate-pulse"></span> ÚLTIMAS
+    </div>
+    <div class="ticker-animation whitespace-nowrap font-condensed text-sm uppercase font-semibold">
+      <span class="mx-8">Asamblea Nacional debate nueva ley de seguridad</span>
+      <span class="mx-8">Ecuador clasifica a semifinales de la Copa América Sub-20</span>
+    </div>
+  </div>
+
+  <!-- 2. HEADER -->
+  <header class="bg-negro text-white linea-amarilla px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-9 z-[90]">
+    <a href="index.html" class="flex items-center gap-3">
+      <img src="CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV Logo" class="h-16 w-auto object-contain">
+      <div class="hidden sm:block">
+        <h1 class="font-bebas text-3xl leading-none">Chasqui<span class="text-amarillo">TV</span></h1>
+        <p class="font-condensed text-[10px] tracking-[0.2em] text-gray-400 uppercase">Noticias del Ecuador</p>
+      </div>
+    </a>
+    <div class="flex items-center bg-grisOsc border border-gray-700 rounded overflow-hidden w-full md:w-64">
+      <input type="text" id="searchInput" placeholder="Buscar..." class="bg-transparent border-none px-3 py-1.5 text-sm outline-none w-full text-white">
+      <button class="bg-amarillo p-2 text-negro">🔍</button>
+    </div>
+  </header>
+
+  <!-- 3. NAVEGACIÓN -->
+  <nav class="bg-grisOsc border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto">
+      <a href="index.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition shrink-0">Inicio</a>
+      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition shrink-0">Política</a>
+      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition shrink-0">Deportes</a>
+      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition shrink-0">Economía</a>
+    </div>
+  </nav>
+
+  <!-- 4. TÍTULO DE BÚSQUEDA -->
+  <div class="bg-gray-50 py-12 border-b border-gray-200">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="font-bebas text-4xl text-negro leading-none mb-2 uppercase">Resultados de búsqueda</h2>
+      <p class="text-gray-500 font-condensed text-sm tracking-widest uppercase">Resultados para: <span class="text-rojo" id="searchTerm">"Seguridad"</span></p>
+    </div>
+  </div>
+
+  <!-- 5. RESULTADOS -->
+  <main class="max-w-4xl mx-auto px-6 py-12">
+    <div class="space-y-12">
+      <!-- JS inyectará los resultados aquí -->
+      <div class="text-center py-20 animate-pulse text-gray-300 font-bold uppercase tracking-widest">Buscando coincidencias...</div>
+    </div>
+
+    <!-- Paginación (Opcional por ahora) -->
+    <div id="search-pagination" class="flex justify-start pt-16 hidden">
+      <nav class="flex gap-2">
+        <button class="w-10 h-10 border border-gray-200 flex items-center justify-center font-bold text-sm bg-negro text-white">1</button>
+      </nav>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-negro text-white mt-20 border-t-4 border-amarillo py-12 px-6 text-center">
+    <img src="CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV" class="h-10 mx-auto mb-6 object-contain">
+    <p class="text-[10px] text-gray-600 uppercase tracking-widest">© 2025 Chasqui TV. El pulso informativo de la nación.</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Usuarios — Chasqui TV Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { amarillo: '#F5C400', rojo: '#CC1818', negro: '#111111', gris: '#F8F8F8' },
+          fontFamily: { bebas: ['Bebas Neue', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gris font-barlow flex min-h-screen" x-data="usuariosManager()">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-negro text-white flex flex-col fixed inset-y-0 shadow-2xl z-50">
+    <div class="p-6 bg-amarillo flex justify-center border-b-4 border-negro">
+      <img src="../CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV" class="h-10 object-contain">
+    </div>
+    <nav class="flex-1 p-4 space-y-2 mt-4">
+      <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📊 Dashboard</a>
+      <a href="noticias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📰 Noticias</a>
+      <a href="categorias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📁 Categorías</a>
+      <a href="banners.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">🖼️ Banners</a>
+      <a href="usuarios.html" class="flex items-center gap-3 px-4 py-3 bg-amarillo text-negro font-bold rounded-lg transition">👥 Usuarios</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-64 p-8">
+    
+    <!-- Bloque de Seguridad: Solo Admin -->
+    <template x-if="!isAdmin">
+      <div class="flex flex-col items-center justify-center h-full space-y-4">
+        <span class="text-6xl">🔒</span>
+        <h2 class="font-bebas text-4xl text-negro">Acceso Restringido</h2>
+        <p class="text-gray-500 uppercase font-bold text-xs tracking-widest text-center">Solo los Administradores pueden gestionar el equipo editorial.</p>
+        <a href="index.html" class="bg-negro text-amarillo px-8 py-2 font-bebas text-xl rounded">Volver al Dashboard</a>
+      </div>
+    </template>
+
+    <template x-if="isAdmin">
+      <div>
+        <header class="flex justify-between items-center mb-8">
+          <div>
+            <h2 class="font-bebas text-4xl text-negro uppercase">Gestión de Equipo</h2>
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Administra roles y accesos de redactores</p>
+          </div>
+          <div class="bg-yellow-50 border border-amarillo p-3 rounded text-[10px] font-bold text-amarillo-900 max-w-xs">
+            ⚠️ Nota: Para añadir un nuevo usuario, este debe registrarse primero o ser invitado vía Supabase Auth.
+          </div>
+        </header>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Usuario</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rol</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Fecha Registro</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <template x-for="perfil in perfiles" :key="perfil.id">
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 bg-gris border border-gray-200 rounded-full flex items-center justify-center font-bold text-negro text-xs" x-text="perfil.nombre.substring(0,2).toUpperCase()"></div>
+                      <div>
+                        <p class="font-bold text-sm text-negro" x-text="perfil.nombre"></p>
+                        <p class="text-[10px] text-gray-400 italic" x-text="perfil.id.substring(0,8) + '...'"></p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <select @change="updateRole(perfil.id, $event.target.value)" class="bg-transparent border-none font-bold text-[10px] uppercase focus:ring-0 cursor-pointer" :class="{
+                      'text-rojo': perfil.rol === 'admin',
+                      'text-blue-600': perfil.rol === 'editor',
+                      'text-gray-500': perfil.rol === 'redactor'
+                    }">
+                      <option value="admin" :selected="perfil.rol === 'admin'">Admin</option>
+                      <option value="editor" :selected="perfil.rol === 'editor'">Editor</option>
+                      <option value="redactor" :selected="perfil.rol === 'redactor'">Redactor</option>
+                    </select>
+                  </td>
+                  <td class="px-6 py-4 text-[10px] text-gray-400 font-bold" x-text="new Date(perfil.created_at).toLocaleDateString()"></td>
+                  <td class="px-6 py-4 text-right">
+                    <button @click="deleteUser(perfil.id)" class="text-gray-300 hover:text-rojo transition" title="Eliminar Acceso">🗑️</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+  </main>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script>
+    function usuariosManager() {
+      return {
+        perfiles: [],
+        isAdmin: false,
+        async init() {
+          const { data: { session } } = await window.supabase.auth.getSession();
+          if (!session) { window.location.href = 'login.html'; return; }
+
+          // Verificar si el usuario actual es Admin
+          const { data: miPerfil } = await window.supabase
+            .from('perfiles')
+            .select('rol')
+            .eq('id', session.user.id)
+            .single();
+
+          if (miPerfil && miPerfil.rol === 'admin') {
+            this.isAdmin = true;
+            this.fetchPerfiles();
+          } else {
+            this.isAdmin = false;
+          }
+        },
+        async fetchPerfiles() {
+          const { data, error } = await window.supabase
+            .from('perfiles')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (!error) this.perfiles = data;
+        },
+        async updateRole(id, newRole) {
+          const { error } = await window.supabase
+            .from('perfiles')
+            .update({ rol: newRole })
+            .eq('id', id);
+          
+          if (error) alert('Error al cambiar rol: ' + error.message);
+          else alert('Rol actualizado correctamente.');
+        },
+        async deleteUser(id) {
+          if (!confirm('¿Seguro? Se eliminará el perfil, pero el usuario seguirá existiendo en el sistema de autenticación central.')) return;
+          const { error } = await window.supabase.from('perfiles').delete().eq('id', id);
+          if (!error) this.fetchPerfiles();
+        }
+      }
+    }
+  </script>
+</body>
+</html>

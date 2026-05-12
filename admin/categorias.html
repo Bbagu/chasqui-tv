@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Categorías — Chasqui TV Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { amarillo: '#F5C400', rojo: '#CC1818', negro: '#111111', gris: '#F8F8F8' },
+          fontFamily: { bebas: ['Bebas Neue', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gris font-barlow flex min-h-screen" x-data="categoriasManager()">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-negro text-white flex flex-col fixed inset-y-0 shadow-2xl z-50">
+    <div class="p-6 bg-amarillo flex justify-center border-b-4 border-negro">
+      <img src="../CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV" class="h-10 object-contain">
+    </div>
+    <nav class="flex-1 p-4 space-y-2 mt-4">
+      <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📊 Dashboard</a>
+      <a href="noticias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📰 Noticias</a>
+      <a href="categorias.html" class="flex items-center gap-3 px-4 py-3 bg-amarillo text-negro font-bold rounded-lg transition">📁 Categorías</a>
+      <a href="banners.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">🖼️ Banners</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 ml-64 p-8">
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h2 class="font-bebas text-4xl text-negro uppercase">Gestión de Categorías</h2>
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Administra las secciones de tu portal</p>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Formulario para Nueva / Editar -->
+      <div class="lg:col-span-4">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-8">
+          <h3 class="font-bebas text-2xl mb-4" x-text="editMode ? 'Editar Categoría' : 'Nueva Categoría'"></h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Nombre</label>
+              <input type="text" x-model="form.nombre" @input="generateSlug" placeholder="Ej. Deportes" class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Slug (URL)</label>
+              <input type="text" x-model="form.slug" readonly class="w-full bg-gray-50 border border-gray-100 px-4 py-2 rounded text-xs text-gray-400 italic outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Color Distintivo</label>
+              <div class="flex gap-2">
+                <input type="color" x-model="form.color" class="h-10 w-12 border-none p-0 bg-transparent cursor-pointer">
+                <input type="text" x-model="form.color" placeholder="#000000" class="flex-1 bg-gris border border-gray-200 px-4 py-2 rounded outline-none focus:border-amarillo transition text-xs">
+              </div>
+            </div>
+
+            <div class="pt-4 flex gap-2">
+              <button @click="saveCategoria" class="flex-1 bg-negro text-amarillo font-bebas text-xl py-2 rounded hover:bg-rojo hover:text-white transition shadow-lg">
+                GUARDAR
+              </button>
+              <button x-show="editMode" @click="resetForm" class="bg-white border border-gray-200 px-4 py-2 rounded text-[10px] font-bold uppercase hover:bg-gray-100">
+                CANCELAR
+              </button>
+            </div>
+          </div>
+
+          <!-- Botón de Semilla (Útil para la primera vez) -->
+          <div class="mt-8 pt-6 border-t border-gray-50">
+            <button @click="seedCategorias" class="w-full border-2 border-dashed border-gray-200 text-gray-400 py-3 rounded text-[10px] font-bold uppercase hover:border-amarillo hover:text-negro transition">
+              Insertar categorías por defecto
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Listado de Categorías -->
+      <div class="lg:col-span-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Color</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nombre</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Slug</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <template x-for="cat in categorias" :key="cat.id">
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">
+                    <div class="w-6 h-6 rounded shadow-inner" :style="`background-color: ${cat.color}`"></div>
+                  </td>
+                  <td class="px-6 py-4 font-bold text-sm text-negro" x-text="cat.nombre"></td>
+                  <td class="px-6 py-4 text-xs text-gray-400 italic" x-text="cat.slug"></td>
+                  <td class="px-6 py-4 text-right space-x-3">
+                    <button @click="editCategoria(cat)" class="text-gray-400 hover:text-negro transition" title="Editar">✏️</button>
+                    <button @click="deleteCategoria(cat.id)" class="text-gray-400 hover:text-rojo transition" title="Eliminar">🗑️</button>
+                  </td>
+                </tr>
+              </template>
+              <template x-if="categorias.length === 0">
+                <tr>
+                  <td colspan="4" class="px-6 py-20 text-center">
+                    <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">No hay categorías. Crea una o usa el botón de "Por defecto".</p>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script>
+    function categoriasManager() {
+      return {
+        categorias: [],
+        editMode: false,
+        form: { id: null, nombre: '', slug: '', color: '#000000' },
+        async init() {
+          const { data: { session } } = await window.supabase.auth.getSession();
+          if (!session) { window.location.href = 'login.html'; return; }
+          this.fetchCategorias();
+        },
+        async fetchCategorias() {
+          const { data, error } = await window.supabase.from('categorias').select('*').order('nombre');
+          if (!error) this.categorias = data;
+        },
+        generateSlug() {
+          this.form.slug = this.form.nombre.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^\w ]+/g, '')
+            .replace(/ +/g, '-');
+        },
+        async saveCategoria() {
+          if (!this.form.nombre) return alert('El nombre es obligatorio');
+          
+          let result;
+          if (this.editMode) {
+            result = await window.supabase.from('categorias').update(this.form).eq('id', this.form.id);
+          } else {
+            result = await window.supabase.from('categorias').insert([{ 
+              nombre: this.form.nombre, 
+              slug: this.form.slug, 
+              color: this.form.color 
+            }]);
+          }
+
+          if (!result.error) {
+            this.resetForm();
+            this.fetchCategorias();
+          } else {
+            alert('Error: ' + result.error.message);
+          }
+        },
+        editCategoria(cat) {
+          this.editMode = true;
+          this.form = { ...cat };
+        },
+        async deleteCategoria(id) {
+          if (!confirm('¿Seguro? Esto podría afectar a las noticias de esta categoría.')) return;
+          const { error } = await window.supabase.from('categorias').delete().eq('id', id);
+          if (!error) this.fetchCategorias();
+        },
+        resetForm() {
+          this.editMode = false;
+          this.form = { id: null, nombre: '', slug: '', color: '#000000' };
+        },
+        async seedCategorias() {
+          const defaults = [
+            { nombre: 'Política', slug: 'politica', color: '#CC1818' },
+            { nombre: 'Deportes', slug: 'deportes', color: '#F5C400' },
+            { nombre: 'Economía', slug: 'economia', color: '#1A1A1A' },
+            { nombre: 'Internacional', slug: 'internacional', color: '#2563EB' },
+            { nombre: 'Tecnología', slug: 'tecnologia', color: '#8B5CF6' }
+          ];
+          const { error } = await window.supabase.from('categorias').insert(defaults);
+          if (!error) this.fetchCategorias();
+          else alert('Ya existen o hubo un error: ' + error.message);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

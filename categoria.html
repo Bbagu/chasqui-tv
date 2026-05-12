@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categoría — Chasqui TV</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { amarillo: '#F5C400', rojo: '#CC1818', negro: '#111111', grisOsc: '#1E1E1E' },
+          fontFamily: { bebas: ['Bebas Neue', 'sans-serif'], barlow: ['Barlow', 'sans-serif'], condensed: ['Barlow Condensed', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .linea-amarilla { border-bottom: 3px solid #F5C400; }
+    .ticker-animation { animation: ticker 30s linear infinite; }
+    @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+  </style>
+</head>
+<body class="bg-white font-barlow text-negro" id="category-page">
+
+  <!-- 1. TICKER -->
+  <div class="bg-rojo text-white h-9 flex items-center overflow-hidden sticky top-0 z-[100]">
+    <div class="bg-negro h-full px-4 flex items-center font-bebas text-lg tracking-wider z-10 shrink-0">
+      <span class="w-2 h-2 bg-amarillo rounded-full mr-2 animate-pulse"></span> ÚLTIMAS
+    </div>
+    <div class="ticker-animation whitespace-nowrap font-condensed text-sm uppercase font-semibold">
+      <span class="mx-8">Chasqui TV — Noticias del Ecuador en vivo y en directo</span>
+    </div>
+  </div>
+
+  <!-- 2. HEADER -->
+  <header class="bg-negro text-white linea-amarilla px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-9 z-[90]">
+    <a href="index.html" class="flex items-center gap-3">
+      <img src="CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV Logo" class="h-16 w-auto object-contain">
+      <div class="hidden sm:block">
+        <h1 class="font-bebas text-3xl leading-none">Chasqui<span class="text-amarillo">TV</span></h1>
+        <p class="font-condensed text-[10px] tracking-[0.2em] text-gray-400 uppercase">Noticias del Ecuador</p>
+      </div>
+    </a>
+    <div class="flex items-center bg-grisOsc border border-gray-700 rounded overflow-hidden w-full md:w-64">
+      <input type="text" placeholder="Buscar..." class="bg-transparent border-none px-3 py-1.5 text-sm outline-none w-full">
+      <button class="bg-amarillo p-2 text-negro">🔍</button>
+    </div>
+  </header>
+
+  <!-- 3. NAVEGACIÓN -->
+  <nav class="bg-grisOsc border-b border-gray-800">
+    <div class="nav-inner max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto">
+      <a href="index.html">Inicio</a>
+    </div>
+  </nav>
+
+  <!-- 4. HEADER DE CATEGORÍA -->
+  <div class="bg-gray-100 py-10 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-6">
+      <nav class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+        <a href="index.html" class="hover:text-rojo">Inicio</a> / <span class="text-negro" id="breadcrumb-cat">Categoría</span>
+      </nav>
+      <h2 class="font-bebas text-5xl md:text-6xl text-negro leading-none tracking-tight uppercase" id="category-title">Cargando...</h2>
+      <div class="w-20 h-1.5 bg-rojo mt-4"></div>
+    </div>
+  </div>
+
+  <!-- 5. LISTADO DE NOTICIAS -->
+  <main class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
+    <div class="lg:col-span-8 space-y-10">
+      <div id="category-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="col-span-full text-center py-20 animate-pulse text-gray-300 font-bold uppercase">Buscando noticias...</div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="lg:col-span-4 space-y-10">
+      <div class="bg-gray-50 p-6 rounded border-t-4 border-rojo">
+        <h3 class="font-bebas text-2xl mb-6">Tendencia</h3>
+        <p class="text-xs text-gray-400 uppercase font-bold">Cargando...</p>
+      </div>
+      <a href="index.html" class="block bg-negro text-amarillo font-bebas text-center py-3 tracking-widest hover:bg-rojo hover:text-white transition">
+        ← Volver al Inicio
+      </a>
+    </aside>
+  </main>
+
+  <footer class="bg-negro text-white mt-20 border-t-4 border-amarillo py-12 px-6 text-center">
+    <img src="CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV" class="h-12 mx-auto mb-6 object-contain">
+    <p class="text-[10px] text-gray-600 uppercase">© 2025 Chasqui TV. Desarrollado con 🇪🇨 en Ecuador</p>
+  </footer>
+
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

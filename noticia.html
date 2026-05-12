@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cargando noticia... — Chasqui TV</title>
+  <meta name="description" content="Portal de noticias del Ecuador." />
+
+  <!-- Open Graph (SEO social) -->
+  <meta property="og:title"       content="Chasqui TV" />
+  <meta property="og:description" content="Noticias en vivo." />
+  <meta property="og:image"       content="https://picsum.photos/seed/hero1/1200/630" />
+  <meta property="og:type"        content="article" />
+  <meta name="twitter:card"       content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&family=Barlow+Condensed:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --amarillo: #F5C400;
+      --rojo:     #CC1818;
+      --negro:    #111111;
+      --gris-osc: #1E1E1E;
+      --gris-med: #2C2C2C;
+      --gris-cla: #F2F2F2;
+      --blanco:   #FFFFFF;
+      --texto:    #222222;
+      --muted:    #666666;
+      --radio-h:  64px;
+      --col-art:  680px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Barlow', sans-serif; background: var(--blanco); color: var(--texto); padding-bottom: 20px; }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* ── TICKER ─────────────────────────────────────────── */
+    .ticker-wrap {
+      background: var(--rojo); color: var(--blanco);
+      display: flex; align-items: center; overflow: hidden;
+      height: 36px; position: sticky; top: 0; z-index: 200;
+    }
+    .ticker-label {
+      background: var(--negro); font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem; letter-spacing: .1em; padding: 0 18px;
+      height: 100%; display: flex; align-items: center;
+      white-space: nowrap; flex-shrink: 0; gap: 8px;
+    }
+    .ticker-label .dot { width:8px;height:8px;background:var(--amarillo);border-radius:50%;display:inline-block;animation:blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+    .ticker-track { display:flex; animation:ticker 40s linear infinite; white-space:nowrap; }
+    .ticker-track:hover { animation-play-state:paused; }
+    .ticker-item { font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:600;padding:0 40px;letter-spacing:.02em; }
+    .ticker-item::before { content:'▸  ';color:var(--amarillo); }
+    @keyframes ticker { 0%{transform:translateX(0)}100%{transform:translateX(-50%)} }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    header {
+      background: var(--negro); padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px; border-bottom: 3px solid var(--amarillo);
+      position: sticky; top: 36px; z-index: 190;
+    }
+    .logo-wrap { display:flex;align-items:center;gap:12px; }
+    .logo-icon {
+      width:48px;height:48px;background:var(--amarillo);
+      clip-path:polygon(20% 0%,80% 0%,100% 20%,100% 80%,80% 100%,20% 100%,0% 80%,0% 20%);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--negro);flex-shrink:0;
+    }
+    .logo-text { font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--blanco);letter-spacing:.06em;line-height:1; }
+    .logo-text span { color:var(--amarillo); }
+    .logo-sub { font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase; }
+    .search-box {
+      display:flex;align-items:center;background:var(--gris-med);
+      border:1px solid #3a3a3a;border-radius:4px;overflow:hidden;height:38px;
+    }
+    .search-box input { background:transparent;border:none;outline:none;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:.9rem;padding:0 14px;width:220px; }
+    .search-box input::placeholder { color:#666; }
+    .search-box button { background:var(--amarillo);border:none;cursor:pointer;padding:0 14px;height:100%;font-size:1rem;display:flex;align-items:center; }
+
+    /* ── NAV ────────────────────────────────────────────── */
+    nav { background:var(--gris-osc);border-bottom:2px solid #2a2a2a; }
+    .nav-inner { max-width:1280px;margin:0 auto;display:flex;align-items:center;padding:0 24px;gap:2px; }
+    .nav-inner a { font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;color:#ccc;padding:12px 16px;display:block;position:relative;transition:color .2s; }
+    .nav-inner a::after { content:'';position:absolute;bottom:0;left:16px;right:16px;height:3px;background:var(--amarillo);transform:scaleX(0);transition:transform .2s; }
+    .nav-inner a:hover { color:var(--blanco); }
+    .nav-inner a:hover::after { transform:scaleX(1); }
+    .nav-inner a.active { color:var(--amarillo); }
+    .nav-inner a.active::after { transform:scaleX(1); }
+
+    /* ── LAYOUT ─────────────────────────────────────────── */
+    .container { max-width:1280px;margin:0 auto;padding:0 24px; }
+    .article-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 40px;
+      padding: 32px 0;
+    }
+
+    /* ── BREADCRUMB ─────────────────────────────────────── */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .8rem; color: var(--muted);
+      margin-bottom: 20px;
+      letter-spacing: .04em;
+    }
+    .breadcrumb a { color: var(--muted); transition: color .2s; }
+    .breadcrumb a:hover { color: var(--rojo); }
+    .breadcrumb .sep { color: #ccc; }
+    .breadcrumb .current { color: var(--texto); }
+
+    /* ── ARTÍCULO ───────────────────────────────────────── */
+    article { max-width: var(--col-art); }
+
+    .art-categoria {
+      display: inline-block;
+      background: var(--rojo); color: var(--blanco);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .75rem; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 2px;
+      margin-bottom: 14px;
+    }
+
+    .art-titulo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.05;
+      letter-spacing: .02em;
+      color: var(--negro);
+      margin-bottom: 16px;
+    }
+
+    .art-bajada {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      font-style: italic;
+      color: #444;
+      line-height: 1.6;
+      border-left: 4px solid var(--amarillo);
+      padding-left: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* Meta del artículo */
+    .art-meta {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 0;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .autor-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--gris-med);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .autor-info { flex: 1; min-width: 0; }
+    .autor-nombre {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .95rem; font-weight: 700;
+      color: var(--negro);
+    }
+    .art-fecha {
+      font-size: .78rem; color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .art-meta-right {
+      display: flex; align-items: center; gap: 12px;
+      margin-left: auto;
+    }
+    .meta-stat {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .82rem; color: var(--muted);
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    /* Compartir */
+    .share-bar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .share-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .8rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .share-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 3px; border: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .82rem; font-weight: 700; letter-spacing: .04em;
+      cursor: pointer; transition: opacity .2s; color: #fff;
+    }
+    .share-btn:hover { opacity: .85; }
+    .share-fb { background: #1877F2; }
+    .share-tw { background: #000; }
+    .share-wa { background: #25D366; }
+    .share-cp { background: var(--gris-cla); color: var(--negro); border: 1px solid #ddd; }
+
+    /* Imagen principal */
+    .art-img-wrap {
+      margin-bottom: 28px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .art-img-wrap img {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+    }
+    .art-img-caption {
+      background: var(--gris-cla);
+      padding: 8px 12px;
+      font-size: .78rem;
+      color: var(--muted);
+      font-style: italic;
+      border-left: 3px solid var(--amarillo);
+    }
+
+    /* Cuerpo del artículo */
+    .art-body {
+      font-family: 'Lora', serif;
+      font-size: 1rem;
+      line-height: 1.85;
+      color: #2a2a2a;
+    }
+    .art-body p { margin-bottom: 1.4em; }
+    .art-body h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; letter-spacing: .06em;
+      color: var(--negro); margin: 2em 0 .8em;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--amarillo);
+    }
+    .art-body h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.15rem; font-weight: 700;
+      color: var(--negro); margin: 1.6em 0 .6em;
+    }
+    .art-body blockquote {
+      margin: 2em 0;
+      padding: 20px 24px;
+      background: var(--gris-cla);
+      border-left: 5px solid var(--rojo);
+      border-radius: 0 4px 4px 0;
+    }
+    .art-body blockquote p {
+      font-size: 1.1rem; font-style: italic;
+      color: #333; margin: 0;
+      line-height: 1.6;
+    }
+    .art-body blockquote cite {
+      display: block; margin-top: 10px;
+      font-size: .82rem; color: var(--muted);
+      font-style: normal; font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .04em;
+    }
+    .art-body ul {
+      padding-left: 1.4em;
+      margin-bottom: 1.4em;
+    }
+    .art-body ul li {
+      margin-bottom: .5em;
+      padding-left: .4em;
+    }
+    .art-body ul li::marker { color: var(--rojo); }
+
+    /* Imagen interna */
+    .art-body .inline-img {
+      margin: 2em 0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .art-body .inline-img img { width:100%;max-height:360px;object-fit:cover; }
+    .art-body .inline-img figcaption {
+      background: var(--gris-cla); padding: 8px 12px;
+      font-size: .78rem; color: var(--muted); font-style: italic;
+      border-left: 3px solid var(--amarillo);
+      font-family: 'Barlow', sans-serif;
+    }
+
+    /* Tags */
+    .art-tags {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin: 32px 0 24px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .art-tags span {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 5px 12px; border-radius: 20px;
+      background: var(--gris-cla); color: var(--muted);
+      cursor: pointer; transition: all .2s;
+    }
+    .art-tags span:hover { background: var(--negro); color: var(--amarillo); }
+
+    /* Compartir inferior */
+    .share-bottom {
+      background: var(--gris-cla);
+      border-radius: 6px;
+      padding: 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .share-bottom p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: .06em; color: var(--negro);
+    }
+    .share-bottom-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── AUTOR BIO ───────────────────────────────────────── */
+    .autor-bio {
+      background: var(--negro);
+      border-radius: 6px;
+      padding: 24px;
+      display: flex; gap: 20px;
+      margin-bottom: 40px;
+      align-items: flex-start;
+    }
+    .autor-bio-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--amarillo);
+      flex-shrink: 0;
+    }
+    .autor-bio-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem; letter-spacing: .08em;
+      color: var(--blanco); margin-bottom: 4px;
+    }
+    .autor-bio-role {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .78rem; color: var(--amarillo);
+      letter-spacing: .1em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .autor-bio-desc {
+      font-size: .85rem; color: #aaa; line-height: 1.6;
+    }
+
+    /* ── NOTICIAS RELACIONADAS ──────────────────────────── */
+    .relacionadas-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; letter-spacing: .1em;
+      color: var(--negro); margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 3px solid var(--negro);
+      position: relative;
+    }
+    .relacionadas-title::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0;
+      width: 60px; height: 3px;
+      background: var(--amarillo);
+    }
+    .grid-relacionadas {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .card-rel {
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card-rel:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+    .card-rel-img { width:100%;aspect-ratio:16/9;object-fit:cover; transition: transform .4s; }
+    .card-rel:hover .card-rel-img { transform: scale(1.04); }
+    .card-rel-img-wrap { overflow: hidden; position: relative; }
+    .card-rel-cat {
+      position: absolute; bottom: 8px; left: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 2px;
+      color: var(--blanco);
+    }
+    .card-rel-body { padding: 12px; }
+    .card-rel-titulo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .95rem; font-weight: 700; line-height: 1.3;
+      color: var(--negro); margin-bottom: 6px;
+    }
+    .card-rel:hover .card-rel-titulo { color: var(--rojo); }
+    .card-rel-time { font-size: .72rem; color: var(--muted); }
+
+    /* ── SIDEBAR ────────────────────────────────────────── */
+    .sidebar { display: flex; flex-direction: column; gap: 24px; }
+
+    .sidebar-widget { background: var(--gris-cla); border-radius: 4px; overflow: hidden; }
+    .widget-header {
+      background: var(--negro); color: var(--blanco);
+      font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
+      letter-spacing: .12em; padding: 10px 14px;
+      border-left: 4px solid var(--amarillo);
+    }
+    .widget-body { padding: 14px; }
+
+    .banner-slot {
+      background: #e8e8e8; border: 2px dashed #ccc; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif; font-size: .8rem;
+      color: var(--muted); letter-spacing: .1em; text-transform: uppercase;
+      text-align: center;
+    }
+    .banner-slot.rectangle { width:300px;height:250px; }
+    .banner-slot.skyscraper { width:300px;height:250px; margin-top: 8px; }
+
+    /* Más leídas */
+    .mas-leida { display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #e0e0e0;align-items:flex-start; }
+    .mas-leida:last-child { border:none; }
+    .mas-leida-num { font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--amarillo);line-height:1;min-width:28px; }
+    .mas-leida-titulo { font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;line-height:1.3;color:var(--negro);cursor:pointer; }
+    .mas-leida-titulo:hover { color:var(--rojo); }
+    .mas-leida-cat { font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px; }
+
+    /* Newsletter */
+    .newsletter-widget { background:var(--negro);border-radius:4px;overflow:hidden; }
+    .newsletter-widget .widget-header { background:var(--rojo);border-color:var(--amarillo); }
+    .newsletter-body { padding:16px;display:flex;flex-direction:column;gap:10px; }
+    .newsletter-body p { font-size:.85rem;color:#aaa;line-height:1.5; }
+    .newsletter-body input { width:100%;padding:10px 12px;background:var(--gris-med);border:1px solid #3a3a3a;border-radius:3px;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:.85rem;outline:none; }
+    .newsletter-body input::placeholder { color:#555; }
+    .newsletter-body input:focus { border-color:var(--amarillo); }
+    .btn-suscribir { background:var(--amarillo);color:var(--negro);font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;border:none;border-radius:3px;padding:10px;width:100%;cursor:pointer;transition:background .2s; }
+    .btn-suscribir:hover { background:#e6b800; }
+
+    /* Noticia mini sidebar */
+    .noticia-mini { display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #e0e0e0;cursor:pointer; }
+    .noticia-mini:last-child { border:none; }
+    .noticia-mini-img { width:72px;height:54px;border-radius:3px;object-fit:cover;flex-shrink:0;background:var(--gris-cla); }
+    .noticia-mini-cat { font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rojo);margin-bottom:3px; }
+    .noticia-mini-titulo { font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:700;line-height:1.3;color:var(--negro); }
+    .noticia-mini:hover .noticia-mini-titulo { color:var(--rojo); }
+    .noticia-mini-time { font-size:.7rem;color:var(--muted);margin-top:3px; }
+
+    /* Progreso de lectura */
+    .reading-progress {
+      position: fixed; top: 108px; left: 0; right: 0;
+      height: 3px; background: transparent; z-index: 180;
+    }
+    .reading-progress-bar {
+      height: 100%; background: var(--amarillo);
+      width: 0%; transition: width .1s linear;
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────── */
+    footer { background:var(--negro);color:#aaa;margin-top:60px;border-top:3px solid var(--amarillo); }
+    .footer-bottom { border-top:1px solid #1a1a1a;padding:16px 24px;max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:#444; }
+    .footer-bottom span { color:var(--amarillo); }
+    .footer-simple {
+      max-width: 1280px; margin: 0 auto; padding: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo-text { font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--blanco);letter-spacing:.08em; }
+    .footer-logo-text span { color:var(--amarillo); }
+    .footer-nav-links { display:flex;gap:20px;flex-wrap:wrap; }
+    .footer-nav-links a { font-family:'Barlow Condensed',sans-serif;font-size:.85rem;color:#666;transition:color .2s; }
+    .footer-nav-links a:hover { color:var(--blanco); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media(max-width:1024px) {
+      .article-layout { grid-template-columns:1fr; }
+      article { max-width:100%; }
+      .grid-relacionadas { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:768px) {
+      .search-box { display:none; }
+      .grid-relacionadas { grid-template-columns:1fr; }
+      .art-titulo { font-size:1.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de progreso de lectura -->
+  <div class="reading-progress">
+    <div class="reading-progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- ══ TICKER ════════════════════════════════════════════ -->
+  <div class="ticker-wrap">
+    <div class="ticker-label"><span class="dot"></span> ÚLTIMAS</div>
+    <div class="ticker-track">
+      <span class="ticker-item">Asamblea Nacional debate nueva ley de comunicación digital</span>
+      <span class="ticker-item">Ecuador clasifica a semifinales de la Copa América Sub-20</span>
+      <span class="ticker-item">Banco Central proyecta crecimiento del 2.4% para el cierre del año</span>
+    </div>
+  </div>
+
+  <!-- ══ HEADER ════════════════════════════════════════════ -->
+  <header>
+    <a href="index.html" class="logo-wrap">
+      <img src="CHASQUI TV LOGO ORIGINAL.png" alt="Chasqui TV Logo" style="height: 50px; width: auto; object-fit: contain;">
+      <div>
+        <div class="logo-text">Chasqui<span>TV</span></div>
+        <div class="logo-sub">Noticias del Ecuador</div>
+      </div>
+    </a>
+    <div class="search-box">
+      <input type="text" placeholder="Buscar noticias..." />
+      <button>🔍</button>
+    </div>
+  </header>
+
+  <!-- ══ NAV ═══════════════════════════════════════════════ -->
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html">Inicio</a>
+    </div>
+  </nav>
+
+  <!-- ══ CONTENIDO ═════════════════════════════════════════ -->
+  <div class="container">
+    <div class="article-layout">
+
+      <!-- ARTÍCULO PRINCIPAL -->
+      <main>
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" aria-label="breadcrumb">
+          <a href="index.html">Inicio</a>
+          <span class="sep">›</span>
+          <span id="breadcrumb-cat" class="sep">...</span>
+          <span class="sep">›</span>
+          <span class="current">Noticia</span>
+        </nav>
+
+        <article id="articulo">
+          <!-- Categoría -->
+          <div class="art-categoria">Cargando...</div>
+
+          <!-- Título -->
+          <h1 class="art-titulo">...</h1>
+
+          <!-- Bajada -->
+          <p class="art-bajada"></p>
+
+          <!-- Meta -->
+          <div class="art-meta">
+            <img class="autor-avatar" src="https://picsum.photos/seed/autor1/80/80" alt="Redacción Chasqui TV" />
+            <div class="autor-info">
+              <div class="autor-nombre">...</div>
+              <div class="art-fecha">
+                <span>📅 ...</span>
+                <span>·</span>
+                <span>⏱ Lectura</span>
+              </div>
+            </div>
+            <div class="art-meta-right">
+              <div class="meta-stat">🔗 Compartir</div>
+            </div>
+          </div>
+
+          <!-- Compartir superior -->
+          <div class="share-bar">
+            <span class="share-label">Compartir:</span>
+            <button class="share-btn share-fb" onclick="compartir('facebook')">📘 Facebook</button>
+            <button class="share-btn share-tw" onclick="compartir('twitter')">✕ Twitter</button>
+            <button class="share-btn share-wa" onclick="compartir('whatsapp')">💬 WhatsApp</button>
+            <button class="share-btn share-cp" onclick="copiarLink()">🔗 Copiar enlace</button>
+          </div>
+
+          <!-- Imagen principal -->
+          <div class="art-img-wrap">
+            <img src="" alt="" />
+          </div>
+
+          <!-- Cuerpo -->
+          <div class="art-body">
+            <div class="py-20 text-center animate-pulse text-gray-300 font-bold uppercase">Cargando contenido...</div>
+          </div>
+
+          <!-- Tags -->
+          <div class="art-tags">
+            <span>Ecuador</span>
+            <span>Noticias</span>
+          </div>
+
+          <!-- Compartir inferior -->
+          <div class="share-bottom">
+            <p>¿Te pareció útil esta noticia? ¡Compártela!</p>
+            <div class="share-bottom-btns">
+              <button class="share-btn share-fb" onclick="compartir('facebook')">📘 Facebook</button>
+              <button class="share-btn share-tw" onclick="compartir('twitter')">✕ Twitter</button>
+              <button class="share-btn share-wa" onclick="compartir('whatsapp')">💬 WhatsApp</button>
+            </div>
+          </div>
+
+        </article>
+      </main>
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="banner-slot rectangle">Publicidad</div>
+        <div class="sidebar-widget">
+          <div class="widget-header">Lo más leído</div>
+          <div class="widget-body">
+             <p class="text-xs text-gray-400">Cargando...</p>
+          </div>
+        </div>
+        
+        <!-- Newsletter -->
+        <div class="newsletter-widget">
+          <div class="widget-header">📧 Newsletter</div>
+          <form class="newsletter-body">
+            <p>Recibe las noticias más importantes cada mañana en tu correo.</p>
+            <input type="email" required placeholder="tu@correo.com" id="emailInput" />
+            <button type="submit" class="btn-suscribir">Suscribirme gratis</button>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ════════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-simple">
+      <div class="footer-logo-text">Chasqui<span>TV</span></div>
+      <div class="footer-nav-links">
+        <a href="#">Privacidad</a>
+        <a href="#">Contacto</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2025 <span>Chasqui TV</span>.</div>
+      <div>🇪🇨 Ecuador</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    // ── Progreso de lectura ───────────────────────────────
+    window.addEventListener('scroll', () => {
+      const art   = document.getElementById('articulo');
+      const bar   = document.getElementById('progressBar');
+      if(!art || !bar) return;
+      const top   = art.getBoundingClientRect().top + window.scrollY;
+      const height = art.offsetHeight;
+      const scrolled = window.scrollY - top;
+      const pct = Math.min(Math.max((scrolled / (height - window.innerHeight)) * 100, 0), 100);
+      bar.style.width = pct + '%';
+    });
+
+    function compartir(red) {
+      const url   = encodeURIComponent(window.location.href);
+      const texto = encodeURIComponent(document.querySelector('.art-titulo').textContent);
+      const links = {
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+        twitter:  `https://twitter.com/intent/tweet?url=${url}&text=${texto}`,
+        whatsapp: `https://wa.me/?text=${texto}%20${url}`
+      };
+      window.open(links[red], '_blank', 'width=600,height=400');
+    }
+
+    function copiarLink() {
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => alert('¡Enlace copiado!'))
+        .catch(() => alert('Error al copiar.'));
+    }
+  </script>
+</body>
+</html>

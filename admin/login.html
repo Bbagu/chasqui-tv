@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Panel — Chasqui TV</title>
+  
+  <!-- Tipografías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind & Alpine.js -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            amarillo: '#F5C400',
+            rojo: '#CC1818',
+            negro: '#111111',
+          },
+          fontFamily: {
+            bebas: ['Bebas Neue', 'sans-serif'],
+            barlow: ['Barlow', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-negro font-barlow min-h-screen flex items-center justify-center p-6">
+
+  <div class="bg-white w-full max-w-md rounded-lg shadow-2xl overflow-hidden" x-data="loginForm()">
+    
+    <!-- Header del Login -->
+    <div class="bg-amarillo p-8 text-center border-b-4 border-negro">
+      <img src="../CHASQUI TV LOGO ORIGINAL.png" alt="Logo" class="h-16 mx-auto mb-4 object-contain">
+      <h2 class="font-bebas text-3xl text-negro tracking-wide uppercase">Panel Editorial</h2>
+      <p class="text-[10px] font-bold text-negro/60 uppercase tracking-widest mt-1 italic">Acceso restringido para personal autorizado</p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="p-8 space-y-6">
+      <template x-if="errorMessage">
+        <div class="bg-red-50 border-l-4 border-rojo p-3 text-rojo text-xs font-bold uppercase tracking-tight">
+          <p x-text="errorMessage"></p>
+        </div>
+      </template>
+
+      <form @submit.prevent="handleLogin" class="space-y-4">
+        <div class="space-y-1">
+          <label class="font-bold text-[10px] text-gray-400 uppercase tracking-widest">Correo electrónico</label>
+          <input type="email" x-model="email" required placeholder="ejemplo@chasqui.tv" class="w-full border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+        </div>
+        <div class="space-y-1">
+          <label class="font-bold text-[10px] text-gray-400 uppercase tracking-widest">Contraseña</label>
+          <input type="password" x-model="password" required placeholder="••••••••" class="w-full border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+        </div>
+
+        <button type="submit" :disabled="loading" class="w-full bg-negro text-amarillo font-bebas text-2xl py-3 rounded hover:bg-rojo hover:text-white transition-all transform active:scale-95 shadow-lg disabled:opacity-50" x-text="loading ? 'INGRESANDO...' : 'ENTRAR AL PANEL'">
+          ENTRAR AL PANEL
+        </button>
+      </form>
+
+      <div class="text-center">
+        <a href="../index.html" class="text-[10px] font-bold text-gray-400 hover:text-negro uppercase tracking-widest transition">← Volver al sitio público</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Lógica de Autenticación -->
+  <script src="../assets/js/supabase.js"></script>
+  <script>
+    function loginForm() {
+      return {
+        email: '',
+        password: '',
+        loading: false,
+        errorMessage: '',
+        async handleLogin() {
+          this.loading = true;
+          this.errorMessage = '';
+          
+          try {
+            const { data, error } = await window.supabase.auth.signInWithPassword({
+              email: this.email,
+              password: this.password,
+            });
+
+            if (error) throw error;
+
+            // Redirigir al dashboard si tiene éxito
+            window.location.href = 'index.html';
+            
+          } catch (error) {
+            this.errorMessage = error.message === 'Invalid login credentials' 
+              ? 'Credenciales incorrectas. Verifica tu correo y contraseña.' 
+              : error.message;
+          } finally {
+            this.loading = false;
+          }
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
