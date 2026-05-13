@@ -16,8 +16,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Si estamos en una página de noticia, cargar noticia
     if (document.getElementById('articulo')) {
         renderNoticiaDetalle();
+        renderPublicBanners();
     }
-    // ... resto del DOMContentLoaded
+
+    // 4. Si estamos en una página de categoría, cargar listado
+    if (document.getElementById('category-page')) {
+        renderCategoryPage();
+        renderPublicBanners();
+    }
+
+    // 5. Si estamos en la página de búsqueda
+    if (document.getElementById('searchTerm')) {
+        renderSearchResults();
+    }
+
+    // 6. Configurar la barra de búsqueda global (Header)
+    setupGlobalSearch();
+
+    // 7. Configurar formularios de Newsletter
+    setupNewsletter();
+
+    // 8. Cargar Widgets de Sidebar (Más leídas)
+    renderSidebarWidgets();
 });
 
 /**
@@ -30,19 +50,29 @@ async function renderPublicBanners() {
             .select('*')
             .eq('activo', true);
 
-        if (!banners) return;
+        if (!banners || banners.length === 0) return;
 
-        // Banner de Sidebar
-        const sidebarContainer = document.getElementById('sidebar-banner');
-        const sideBanner = banners.find(b => b.posicion === 'sidebar');
-        if (sidebarContainer && sideBanner) {
-            sidebarContainer.innerHTML = `
-                <a href="${sideBanner.url_destino || '#'}" target="_blank" class="block w-full h-full">
-                    <img src="${sideBanner.imagen_url}" alt="${sideBanner.nombre}" class="w-full h-full object-cover rounded shadow-lg">
-                </a>
-            `;
-            sidebarContainer.classList.remove('bg-gray-100', 'border-2', 'border-dashed');
-        }
+        // Función auxiliar para inyectar banner
+        const injectBanner = (position, elementId) => {
+            const container = document.getElementById(elementId);
+            const banner = banners.find(b => b.posicion === position);
+            if (container && banner) {
+                container.innerHTML = `
+                    <a href="${banner.url_destino || '#'}" target="_blank" class="block w-full h-full">
+                        <img src="${banner.imagen_url}" alt="${banner.nombre}" class="w-full h-full object-cover rounded shadow-lg">
+                    </a>
+                `;
+                container.classList.remove('bg-gray-100', 'border-2', 'border-dashed', 'text-gray-400');
+                container.style.height = 'auto';
+                container.style.border = 'none';
+            }
+        };
+
+        injectBanner('header', 'header-banner');
+        injectBanner('sidebar', 'sidebar-banner');
+        injectBanner('footer', 'footer-banner');
+        injectBanner('articulo', 'article-banner');
+
     } catch (e) {
         console.error('Error al cargar banners:', e);
     }
@@ -56,19 +86,27 @@ async function renderNoticiaDetalle() {
     const slug = params.get('slug');
 
     if (!slug) {
-        window.location.href = 'index.html';
+        console.error("No se proporcionó un slug en la URL");
         return;
     }
 
     try {
-        // Traer noticia
+        // Traer noticia (con maybeSingle para que no de error si no hay nada)
         const { data: noticia, error } = await window.supabase
             .from('noticias')
             .select('*')
             .eq('slug', slug)
             .maybeSingle();
 
-        if (error || !noticia) throw new Error('Noticia no encontrada');
+        if (error) {
+            console.error("Error de Supabase:", error);
+            throw error;
+        }
+
+        if (!noticia) {
+            console.warn("Noticia no encontrada para el slug:", slug);
+            throw new Error('Noticia no encontrada');
+        }
 
         // Traer categoría por separado
         let nombreCat = 'General';
@@ -84,8 +122,9 @@ async function renderNoticiaDetalle() {
             if (perfil) nombreAutor = perfil.nombre;
         }
 
-        // Inyectar datos
+        // Inyectar datos en el HTML
         document.title = `${noticia.titulo} — Chasqui TV`;
+        
         const catBadge = document.querySelector('.art-categoria');
         if (catBadge) catBadge.textContent = nombreCat;
         
@@ -99,21 +138,27 @@ async function renderNoticiaDetalle() {
         if (authorName) authorName.textContent = `Por: ${nombreAutor}`;
         
         const dateSpan = document.querySelector('.art-fecha span:first-child');
-        if (dateSpan) dateSpan.textContent = `📅 ${new Date(noticia.created_at).toLocaleDateString()}`;
+        if (dateSpan) dateSpan.textContent = `📅 ${new Date(noticia.created_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
         
         const mainImg = document.querySelector('.art-img-wrap img');
-        if (mainImg) mainImg.src = noticia.imagen_url || 'https://via.placeholder.com/1200x630';
+        if (mainImg) {
+            mainImg.src = noticia.imagen_url || 'https://via.placeholder.com/1200x630';
+            mainImg.alt = noticia.titulo;
+        }
         
         const bodyContainer = document.querySelector('.art-body');
         if (bodyContainer) bodyContainer.innerHTML = noticia.contenido;
 
-        // Actualizar vistas
+        // Cargar Relacionadas
+        renderRelatedNews(noticia.categoria_id, noticia.id);
+
+        // Actualizar vistas (RPC)
         await window.supabase.rpc('increment_vistas', { row_id: noticia.id }).catch(() => {});
 
     } catch (err) {
-        console.error(err);
+        console.error("Fallo al renderizar noticia:", err.message);
         const main = document.querySelector('main');
-        if (main) main.innerHTML = `<div class="py-20 text-center uppercase font-bold text-gray-400">Error: La noticia no existe.</div>`;
+        if (main) main.innerHTML = `<div class="py-20 text-center uppercase font-bold text-gray-400">Error: La noticia no existe o el enlace es incorrecto.</div>`;
     }
 }
 
