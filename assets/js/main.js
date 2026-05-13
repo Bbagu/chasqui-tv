@@ -398,7 +398,14 @@ async function renderHomeContent() {
         
         const livePlayer = document.getElementById('livePlayer');
         if (config && livePlayer) {
-            livePlayer.src = config.valor;
+            let url = config.valor;
+            // Convertir URL de YouTube normal a Embed si es necesario
+            if (url.includes('youtube.com/watch?v=')) {
+                url = url.replace('watch?v=', 'embed/');
+            } else if (url.includes('youtu.be/')) {
+                url = url.replace('youtu.be/', 'youtube.com/embed/');
+            }
+            livePlayer.src = url;
         }
     } catch (e) {}
 

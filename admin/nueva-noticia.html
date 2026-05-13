@@ -31,6 +31,9 @@
     <nav class="flex-1 p-4 space-y-2 mt-4">
       <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📊 Dashboard</a>
       <a href="noticias.html" class="flex items-center gap-3 px-4 py-3 bg-amarillo text-negro font-bold rounded-lg transition">📰 Noticias</a>
+      <a href="categorias.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">📁 Categorías</a>
+      <a href="banners.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">🖼️ Banners</a>
+      <a href="usuarios.html" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">👥 Usuarios</a>
     </nav>
   </aside>
 
@@ -58,7 +61,7 @@
             <input type="text" x-model="form.titulo" @input="generateSlug" placeholder="Escribe un titular impactante..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-lg font-bold">
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Slug (URL amigable)</label>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Slug (URL (URL amigable)</label>
             <input type="text" x-model="form.slug" readonly class="w-full bg-gray-50 border border-gray-100 px-4 py-2 rounded text-xs text-gray-400 italic outline-none">
           </div>
           <div>
@@ -173,7 +176,14 @@
         },
         async saveNoticia() {
           const { data: { session } } = await window.supabase.auth.getSession();
-          const payload = { ...this.form, autor_id: session.user.id };
+          
+          // Limpiar categoria_id para que sea NULL si es string vacío (evita error de integer)
+          const payload = { 
+            ...this.form, 
+            autor_id: session.user.id,
+            categoria_id: this.form.categoria_id === "" ? null : parseInt(this.form.categoria_id)
+          };
+
           let result;
           if (this.editMode) {
             result = await window.supabase.from('noticias').update(payload).eq('id', this.form.id);

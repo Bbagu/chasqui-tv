@@ -61,15 +61,15 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
       <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amarillo">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Noticias Publicadas</p>
-        <h3 class="font-bebas text-5xl text-negro">124</h3>
+        <h3 class="font-bebas text-5xl text-negro" x-text="stats.noticias">0</h3>
       </div>
       <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-rojo">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vistas Totales</p>
-        <h3 class="font-bebas text-5xl text-negro">8.5k</h3>
+        <h3 class="font-bebas text-5xl text-negro" x-text="stats.vistas">0</h3>
       </div>
       <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-negro">
         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Suscriptores</p>
-        <h3 class="font-bebas text-5xl text-negro">452</h3>
+        <h3 class="font-bebas text-5xl text-negro" x-text="stats.suscriptores">0</h3>
       </div>
     </div>
 
@@ -82,7 +82,7 @@
       <div class="flex flex-col md:flex-row gap-4">
         <div class="flex-1">
           <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">URL de YouTube o Facebook Live</label>
-          <input type="text" x-model="liveUrl" placeholder="https://www.youtube.com/embed/..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
+          <input type="text" x-model="liveUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-gris border border-gray-200 px-4 py-3 rounded outline-none focus:border-amarillo transition text-sm">
         </div>
         <button @click="updateLiveUrl" class="bg-negro text-amarillo font-bebas text-xl px-10 py-3 rounded hover:bg-rojo hover:text-white transition-all self-end">
           ACTUALIZAR SEÑAL
@@ -99,35 +99,36 @@
       return {
         userName: 'Editor',
         liveUrl: '',
+        stats: { noticias: 0, vistas: 0, suscriptores: 0 },
         async init() {
-          // Verificar si el usuario está autenticado
           const { data: { user } } = await window.supabase.auth.getUser();
-          if (!user) {
-            window.location.href = 'login.html';
-            return;
-          }
-          this.userName = user.user_metadata.nombre || 'Admin';
+          if (!user) { window.location.href = 'login.html'; return; }
+          
+          this.userName = user.user_metadata?.nombre || 'Admin';
+          this.fetchStats();
           this.getLiveUrl();
         },
+        async fetchStats() {
+          // Contar noticias
+          const { count: nNoticias } = await window.supabase.from('noticias').select('*', { count: 'exact', head: true });
+          this.stats.noticias = nNoticias || 0;
+
+          // Sumar vistas
+          const { data: vData } = await window.supabase.from('noticias').select('vistas');
+          this.stats.vistas = vData?.reduce((acc, curr) => acc + (curr.vistas || 0), 0) || 0;
+
+          // Contar suscriptores
+          const { count: nSuscriptores } = await window.supabase.from('suscriptores').select('*', { count: 'exact', head: true });
+          this.stats.suscriptores = nSuscriptores || 0;
+        },
         async getLiveUrl() {
-          const { data, error } = await window.supabase
-            .from('configuracion')
-            .select('valor')
-            .eq('clave', 'url_live')
-            .single();
+          const { data } = await window.supabase.from('configuracion').select('valor').eq('clave', 'url_live').single();
           if (data) this.liveUrl = data.valor;
         },
         async updateLiveUrl() {
-          const { error } = await window.supabase
-            .from('configuracion')
-            .update({ valor: this.liveUrl })
-            .eq('clave', 'url_live');
-          
-          if (!error) {
-            alert('¡Señal actualizada correctamente!');
-          } else {
-            alert('Error al actualizar: ' + error.message);
-          }
+          const { error } = await window.supabase.from('configuracion').upsert({ clave: 'url_live', valor: this.liveUrl });
+          if (!error) alert('¡Señal actualizada correctamente!');
+          else alert('Error: ' + error.message);
         },
         async logout() {
           await window.supabase.auth.signOut();
