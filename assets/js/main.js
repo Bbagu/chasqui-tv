@@ -86,25 +86,24 @@ async function renderNoticiaDetalle() {
     const slug = params.get('slug');
 
     if (!slug) {
-        console.error("No se proporcionó un slug en la URL");
+        console.error("Error: No se encontró el parámetro 'slug' en la URL.");
         return;
     }
 
+    console.log("Buscando noticia con slug:", slug);
+
     try {
-        // Traer noticia (con maybeSingle para que no de error si no hay nada)
+        // Traer noticia (filtramos por slug ignorando mayúsculas/minúsculas)
         const { data: noticia, error } = await window.supabase
             .from('noticias')
             .select('*')
-            .eq('slug', slug)
+            .ilike('slug', slug)
             .maybeSingle();
 
-        if (error) {
-            console.error("Error de Supabase:", error);
-            throw error;
-        }
+        if (error) throw error;
 
         if (!noticia) {
-            console.warn("Noticia no encontrada para el slug:", slug);
+            console.error("No se encontró ninguna noticia en la base de datos con el slug:", slug);
             throw new Error('Noticia no encontrada');
         }
 
@@ -138,7 +137,10 @@ async function renderNoticiaDetalle() {
         if (authorName) authorName.textContent = `Por: ${nombreAutor}`;
         
         const dateSpan = document.querySelector('.art-fecha span:first-child');
-        if (dateSpan) dateSpan.textContent = `📅 ${new Date(noticia.created_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+        if (dateSpan) {
+            const fecha = new Date(noticia.created_at);
+            dateSpan.textContent = `📅 ${fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}`;
+        }
         
         const mainImg = document.querySelector('.art-img-wrap img');
         if (mainImg) {
@@ -149,6 +151,9 @@ async function renderNoticiaDetalle() {
         const bodyContainer = document.querySelector('.art-body');
         if (bodyContainer) bodyContainer.innerHTML = noticia.contenido;
 
+        // Banner dentro del artículo
+        renderPublicBanners();
+
         // Cargar Relacionadas
         renderRelatedNews(noticia.categoria_id, noticia.id);
 
@@ -156,9 +161,15 @@ async function renderNoticiaDetalle() {
         await window.supabase.rpc('increment_vistas', { row_id: noticia.id }).catch(() => {});
 
     } catch (err) {
-        console.error("Fallo al renderizar noticia:", err.message);
+        console.error("Error al renderizar:", err.message);
         const main = document.querySelector('main');
-        if (main) main.innerHTML = `<div class="py-20 text-center uppercase font-bold text-gray-400">Error: La noticia no existe o el enlace es incorrecto.</div>`;
+        if (main) main.innerHTML = `
+            <div class="py-20 text-center space-y-4">
+                <h3 class="font-bebas text-3xl text-gray-400 uppercase">Lo sentimos</h3>
+                <p class="text-gray-500">La noticia no existe o el enlace es incorrecto.</p>
+                <a href="index.html" class="inline-block bg-negro text-amarillo font-bebas px-6 py-2 rounded">Volver al Inicio</a>
+            </div>
+        `;
     }
 }
 
