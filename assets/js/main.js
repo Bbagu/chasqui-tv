@@ -179,13 +179,25 @@ async function renderNoticiaDetalle() {
     }
 
     try {
+        // Traer noticia con categoría (join simple)
         const { data: noticia, error } = await window.supabase
             .from('noticias')
-            .select('*, categorias(nombre), perfiles(nombre)')
+            .select('*, categorias(nombre)')
             .eq('slug', slug)
             .single();
 
         if (error || !noticia) throw new Error('Noticia no encontrada');
+
+        // Intentar traer el nombre del autor por separado para evitar fallos de RLS en el join
+        let nombreAutor = 'Redacción Chasqui TV';
+        if (noticia.autor_id) {
+            const { data: perfil } = await window.supabase
+                .from('perfiles')
+                .select('nombre')
+                .eq('id', noticia.autor_id)
+                .single();
+            if (perfil) nombreAutor = perfil.nombre;
+        }
 
         // Inyectar datos en el HTML
         document.title = `${noticia.titulo} — Chasqui TV`;
@@ -200,13 +212,16 @@ async function renderNoticiaDetalle() {
         if (summaryP) summaryP.textContent = noticia.resumen || '';
         
         const authorName = document.querySelector('.autor-nombre');
-        if (authorName) authorName.textContent = `Por: ${noticia.perfiles?.nombre || 'Redacción Chasqui TV'}`;
+        if (authorName) authorName.textContent = `Por: ${nombreAutor}`;
         
         const dateSpan = document.querySelector('.art-fecha span:first-child');
         if (dateSpan) dateSpan.textContent = `📅 ${new Date(noticia.created_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
         
         const mainImg = document.querySelector('.art-img-wrap img');
-        if (mainImg) mainImg.src = noticia.imagen_url || 'https://via.placeholder.com/1200x630';
+        if (mainImg) {
+            mainImg.src = noticia.imagen_url || 'https://via.placeholder.com/1200x630';
+            mainImg.alt = noticia.titulo;
+        }
         
         const bodyContainer = document.querySelector('.art-body');
         if (bodyContainer) bodyContainer.innerHTML = noticia.contenido;

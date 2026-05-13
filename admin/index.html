@@ -126,9 +126,15 @@
           if (data) this.liveUrl = data.valor;
         },
         async updateLiveUrl() {
-          const { error } = await window.supabase.from('configuracion').upsert({ clave: 'url_live', valor: this.liveUrl });
-          if (!error) alert('¡Señal actualizada correctamente!');
-          else alert('Error: ' + error.message);
+          const { error } = await window.supabase
+            .from('configuracion')
+            .upsert({ clave: 'url_live', valor: this.liveUrl }, { onConflict: 'clave' });
+          
+          if (!error) {
+            alert('¡Señal actualizada correctamente!');
+          } else {
+            alert('Error: ' + error.message);
+          }
         },
         async logout() {
           await window.supabase.auth.signOut();

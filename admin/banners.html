@@ -172,7 +172,9 @@
           if (this.editMode) {
             result = await window.supabase.from('banners').update(this.form).eq('id', this.form.id);
           } else {
-            result = await window.supabase.from('banners').insert([this.form]);
+            // Eliminar el ID para que la DB lo genere automáticamente
+            const { id, ...newBanner } = this.form;
+            result = await window.supabase.from('banners').insert([newBanner]);
           }
 
           if (!result.error) {

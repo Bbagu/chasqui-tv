@@ -73,12 +73,8 @@
 
   <!-- 3. NAVEGACIÓN -->
   <nav class="bg-grisOsc border-b border-gray-800 hidden md:block">
-    <div class="max-w-7xl mx-auto px-6 flex gap-1">
-      <a href="index.html" class="font-condensed font-bold text-amarillo border-b-2 border-amarillo px-4 py-3 uppercase text-sm">Inicio</a>
-      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Política</a>
-      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Deportes</a>
-      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Economía</a>
-      <a href="categoria.html" class="font-condensed font-bold text-gray-400 hover:text-white px-4 py-3 uppercase text-sm transition">Internacional</a>
+    <div class="nav-inner max-w-7xl mx-auto px-6 flex gap-1">
+      <!-- JS inyectará las categorías aquí -->
     </div>
   </nav>
 
@@ -120,27 +116,15 @@
     <aside class="lg:col-span-4 space-y-8">
       
       <!-- BANNER PUBLICIDAD -->
-      <div class="bg-gray-100 border-2 border-dashed border-gray-300 h-64 flex flex-col items-center justify-center text-gray-400 font-condensed">
+      <div id="sidebar-banner" class="bg-gray-100 border-2 border-dashed border-gray-300 h-64 flex flex-col items-center justify-center text-gray-400 font-condensed">
         <span class="text-xs uppercase tracking-widest">Publicidad</span>
-        <span class="text-lg">300 x 250</span>
       </div>
 
       <!-- LO MÁS LEÍDO -->
       <div class="bg-gray-50 p-5 rounded">
         <h3 class="font-bebas text-xl border-b-2 border-amarillo mb-4">Lo más leído</h3>
-        <ul class="space-y-4">
-          <li class="flex gap-3">
-            <span class="font-bebas text-3xl text-amarillo leading-none">1</span>
-            <a href="noticia.html" class="font-condensed font-bold text-sm hover:text-rojo transition">Sismo de 4.2 sacude Guayaquil esta madrugada</a>
-          </li>
-          <li class="flex gap-3">
-            <span class="font-bebas text-3xl text-amarillo leading-none">2</span>
-            <a href="noticia.html" class="font-condensed font-bold text-sm hover:text-rojo transition">Nuevas tarifas eléctricas entran en vigencia el próximo mes</a>
-          </li>
-          <li class="flex gap-3">
-            <span class="font-bebas text-3xl text-amarillo leading-none">3</span>
-            <a href="noticia.html" class="font-condensed font-bold text-sm hover:text-rojo transition">Barcelona SC prepara su próximo encuentro en el Monumental</a>
-          </li>
+        <ul id="sidebar-most-read" class="space-y-4">
+          <!-- JS inyectará aquí -->
         </ul>
       </div>
 
