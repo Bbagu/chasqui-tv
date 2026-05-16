@@ -159,6 +159,7 @@ async function renderNoticiaDetalle() {
         };
 
         setVal('.art-categoria', nombreCat);
+        setVal('#breadcrumb-cat', nombreCat); // Actualizar el "..." en el breadcrumb
         setVal('.art-titulo', noticia.titulo);
         setVal('.art-bajada', noticia.resumen || '');
         setVal('.autor-nombre', `Por: ${nombreAutor}`);
