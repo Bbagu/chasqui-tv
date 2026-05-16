@@ -178,8 +178,12 @@ async function renderNoticiaDetalle() {
         renderRelatedNews(noticia.categoria_id, noticia.id);
         renderPublicBanners();
 
-        // Actualizar vistas
-        await window.supabase.rpc('increment_vistas', { row_id: noticia.id }).catch(() => {});
+        // Actualizar vistas (Llamada asíncrona segura)
+        try {
+            await window.supabase.rpc('increment_vistas', { row_id: noticia.id });
+        } catch (rpcError) {
+            console.warn("DEBUG: No se pudo incrementar vistas:", rpcError);
+        }
 
     } catch (err) {
         console.error("CRITICAL: Error en renderNoticiaDetalle:", err);
@@ -187,11 +191,85 @@ async function renderNoticiaDetalle() {
         if (main) main.innerHTML = `
             <div class="py-20 text-center space-y-4">
                 <h3 class="font-bebas text-3xl text-gray-400 uppercase">Noticia no disponible</h3>
-                <p class="text-gray-500">No hemos podido cargar esta información. Verifica tu conexión o el enlace.</p>
+                <p class="text-gray-500">No hemos podido cargar esta información. Detalle: ${err.message}</p>
                 <a href="index.html" class="inline-block bg-negro text-amarillo font-bebas px-6 py-2 rounded">Volver al Inicio</a>
             </div>
         `;
     }
+}
+
+/**
+ * Configura los inputs de búsqueda en el header
+ */
+function setupGlobalSearch() {
+    const searchInputs = document.querySelectorAll('header input[type="text"], .search-box input');
+    const searchButtons = document.querySelectorAll('header button, .search-box button');
+
+    const performSearch = (val) => {
+        if (!val.trim()) return;
+        window.location.href = `buscar.html?q=${encodeURIComponent(val.trim())}`;
+    };
+
+    searchInputs.forEach(input => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch(input.value);
+        });
+    });
+
+    searchButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.parentElement.querySelector('input');
+            if (input) performSearch(input.value);
+        });
+    });
+}
+
+/**
+ * Gestiona la suscripción al newsletter en todo el sitio
+ */
+function setupNewsletter() {
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        const emailInput = form.querySelector('input[type="email"]');
+        if (!emailInput) return;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+            const btn = form.querySelector('button');
+            const originalText = btn?.textContent || 'Suscribirme';
+
+            if (!email) return;
+
+            try {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'PROCESANDO...';
+                }
+
+                const { error } = await window.supabase
+                    .from('suscriptores')
+                    .insert([{ email: email, activo: true }]);
+
+                if (error) {
+                    if (error.code === '23505') throw new Error('Este correo ya está registrado.');
+                    throw error;
+                }
+
+                alert('¡Gracias por suscribirte a Chasqui TV!');
+                emailInput.value = '';
+
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            }
+        });
+    });
 }
 
 /**
